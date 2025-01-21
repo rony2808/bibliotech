@@ -1,0 +1,151 @@
+{% extends 'library/base.html' %}
+{% load library_extras %}
+
+{% block title %}Liste de Livres {% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Catalogue des Livres</h1>
+
+    <div class="card mb-4">
+    <div class="card-body">
+        <form method="get" action="{% url 'book_list' %}" class="row g-3">
+            <!-- Barre de recherche -->
+            <div class="col-md-4">
+                <label for="q" class="form-label">Rechercher</label>
+                <input type="text" name="q" id="q" class="form-control"
+                       value="{{ search_query }}"
+                       placeholder="Titre, auteur ou ISBN...">
+            </div>
+
+            <!-- Barre de statut des résultats -->
+            <div class="alert alert-info mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if books %}
+                        {{ books|length }} livre(s) trouve(s)
+                        {% if search_query or selected_category or selected_availability %}
+                            avec les filtres:
+                            {% if search_query %}
+                                <span class="badge bg-primary">Recherche: {{ search_query }}</span>
+                            {% endif %}
+                            {% if selected_category %}
+                                <span class="badge bg-primary">
+                                    Catégorie: {{ categories|get_category_name:selected_category }}
+                                </span>
+                            {% endif %}
+                            {% if selected_availability %}
+                                <span class="badge bg-primary">
+                                    {% if selected_availability == 'yes' %}Disponibles
+                                    {% else %}Non disponibles{% endif %}
+                                </span>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        Aucun livre ne correspond à vos critères
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+            <!-- Filtre par catégorie -->
+            <div class="col-md-4">
+                <label for="category" class="form-label">Catégorie</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">Toutes les catégories</option>
+                    {% if categories %}
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+
+            <!-- Filtre de disponibilité -->
+            <div class="col-md-4">
+                <label for="available" class="form-label">Disponibilité</label>
+                <select name="available" id="available" class="form-select">
+                    <option value="">Tous les livres</option>
+                    <option value="yes" {% if selected_availability == 'yes' %}selected{% endif %}>Disponibles</option>
+                    <option value="no" {% if selected_availability == 'no' %}selected{% endif %}>Non disponibles</option>
+                </select>
+            </div>
+
+            <!-- Boutons -->
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+                <a href="{% url 'book_list' %}" class="btn btn-secondary">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher un livre..." value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for book in books %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" class="card-img-top" alt="{{ book.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">{{ book.category.name }}</small><br>
+                            {% if book.available_copies > 0 %}
+                                <span class="badge bg-success">Disponible ({{ book.available_copies }})</span>
+                            {% else %}
+                                <span class="badge bg-danger">Indisponible</span>
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'book_detail' book.pk %}" class="btn btn-primary">Voir details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+        <div class="col-12">
+                <p class="text-center">Aucun livre trouvé.</p>
+            </div>
+        {% endfor %}
+    </div>
+    {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&laquo; Première</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Précédente</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Suivante</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Dernière &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

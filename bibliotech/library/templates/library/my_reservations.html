@@ -1,0 +1,57 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Mes Reservations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Mes Réservations</h1>
+
+    {% if reservations %}
+      <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Livre</th>
+                  <th>Date de reservation</th>
+                  <th>Position dans la file</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for reservation in reservations %}
+                  <tr>
+                    <td>
+                      <a href="{% url 'book_detail' reservation.book.pk %}">
+                        {{ reservation.book.title }}
+                      </a>
+                    </td>
+                    <td>{{ reservation.reservation_date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% with position=reservation.get_position %}
+                          {% if position == 1 %}
+                            <span class="badge bg_success">Prochain</span>
+                          {% else %}
+                            Position {{ position }}
+                          {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                      <form method="post" action="{% url 'cancel_reservation' reservation.id%}" class=d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">
+                          Annuler la reservation
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Vous n'avez aucune réservation en cours.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

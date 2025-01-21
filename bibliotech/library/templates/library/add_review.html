@@ -1,0 +1,68 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Évaluer {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Évaluer "{{ book.title }}"</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <!-- Système de notation avec étoiles -->
+        <div class="mb-4">
+            <label class="form-label">Note :</label>
+            <div class="star-rating">
+                <input type="radio" name="rating" value="5" id="star5" {% if form.rating.value == 5 %}checked{% endif %}>
+                <label for="star5" title="5 étoiles">★</label>
+
+                <input type="radio" name="rating" value="4" id="star4" {% if form.rating.value == 4 %}checked{% endif %}>
+                <label for="star4" title="4 étoiles">★</label>
+
+                <input type="radio" name="rating" value="3" id="star3" {% if form.rating.value == 3 %}checked{% endif %}>
+                <label for="star3" title="3 étoiles">★</label>
+
+                <input type="radio" name="rating" value="2" id="star2" {% if form.rating.value == 2 %}checked{% endif %}>
+                <label for="star2" title="2 étoiles">★</label>
+
+                <input type="radio" name="rating" value="1" id="star1" {% if form.rating.value == 1 %}checked{% endif %}>
+                <label for="star1" title="1 étoile">★</label>
+            </div>
+        </div>
+
+        <!-- Champ commentaire -->
+        <div class="mb-3">
+            <label for="comment" class="form-label">Commentaire (optionnel) :</label>
+            <textarea name="comment" id="comment" class="form-control" rows="4">{{ form.comment.value|default:'' }}</textarea>
+        </div>
+
+        <!-- Boutons -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+            <a href="{% url 'book_detail' book.pk %}" class="btn btn-secondary ms-2">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<!-- CSS pour les étoiles -->
+<style>
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        font-size: 1.5em;
+        justify-content: flex-end;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        cursor: pointer;
+        color: #ccc;
+        padding: 0 0.2em;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label {
+        color: #f90;
+    }
+</style>
+{% endblock %}

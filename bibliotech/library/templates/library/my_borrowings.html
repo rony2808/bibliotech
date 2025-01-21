@@ -1,0 +1,52 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Mes Emprunts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Mes Emprunts</h1>
+
+    {% if borrowings %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Livre</th>
+                        <th>Date d'emprunt</th>
+                        <th>Date de retour prévue</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrowing in borrowings %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'book_detail' borrowing.book.pk %}">
+                                    {{ borrowing.book.title }}
+                                </a>
+                            </td>
+                            <td>{{ borrowing.borrowed_date|date:"d/m/Y" }}</td>
+                            <td>
+                                {{ borrowing.return_date|date:"d/m/Y" }}
+                                {% if borrowing.return_date < now %}
+                                    <span class="badge bg-danger">En retard</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'return_book' borrowing.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Retourner le livre
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="alert alert-info">Vous n'avez aucun emprunt en cours.</p>
+    {% endif %}
+</div>
+{% endblock %}

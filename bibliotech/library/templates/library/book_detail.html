@@ -1,0 +1,185 @@
+{% extends 'library/base.html' %}
+{% load library_extras %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête avec breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'book_list' %}">Livres</a></li>
+            <li class="breadcrumb-item active">{{ book.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Image du livre -->
+        <div class="col-md-4">
+            {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" class="img-fluid rounded shadow" alt="{{ book.title }}">
+            {% else %}
+                <div class="bg-light rounded shadow p-4 text-center">
+                    <i class="fas fa-book fa-4x text-secondary"></i>
+                    <p class="mt-2">Pas d'image disponible</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Détails du livre -->
+        <div class="col-md-8">
+            <h1 class="mb-3">{{ book.title }}</h1>
+            <h4 class="text-muted mb-4">par {{ book.author }}</h4>
+
+        <!-- Après les détails du livre -->
+        <div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+        <h5 class="mb-0">Évaluations et Commentaires</h5>
+        {% if user.is_authenticated %}
+            {% if not user_review %}
+                <a href="{% url 'add_review' book.pk %}" class="btn btn-primary btn-sm">
+                    Ajouter une évaluation
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="card-body">
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="review {% if not forloop.last %}border-bottom{% endif %} pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold">{{ review.user.username }}</div>
+                            <div class="text-warning">
+                                {% for i in review.rating|get_range %}★{% endfor %}
+                                <span class="text-muted">({{ review.rating }}/5)</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {{ review.created_at|date:"d/m/Y" }}
+                        </small>
+                    </div>
+                    {% if review.comment %}
+                        <p class="mt-2 mb-0">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center text-muted my-3">
+                Aucune évaluation pour le moment. Soyez le premier à évaluer ce livre !
+            </p>
+        {% endif %}
+    </div>
+</div>
+            <div class="card mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Historique des emprunts</h5>
+    </div>
+    <div class="card-body">
+        {% if borrowing_history %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Emprunteur</th>
+                            <th>Date d'emprunt</th>
+                            <th>Date de retour</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for borrowing in borrowing_history %}
+                            <tr>
+                                <td>{{ borrowing.user.username }}</td>
+                                <td>{{ borrowing.borrowed_date|date:"d/m/Y" }}</td>
+                                <td>{{ borrowing.return_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if borrowing.returned %}
+                                        <span class="badge bg-success">Retourné</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">En cours</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-center mb-0">Aucun historique d'emprunt pour ce livre.</p>
+        {% endif %}
+    </div>
+</div>
+
+            <!-- Badge de disponibilité -->
+            {% if book.available_copies > 0 %}
+                <span class="badge bg-success mb-3">{{ book.available_copies }} exemplaire(s) disponible(s)</span>
+            {% else %}
+                <span class="badge bg-danger mb-3">Indisponible</span>
+            {% endif %}
+
+            <!-- Après les badges de disponibilité -->
+            <div class="row mb-4">
+                <div class="col-auto">
+                    <div class="d-flex align-items-center">
+                        <div class="h4 mb-0 me-2">{{ book.average_rating }}</div>
+                        <div class="text-warning">
+                            {% with ''|center:book.average_rating|floatformat:0 as stars %}
+                                {% for _ in stars %}★{% endfor %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ book.total_reviews }} évaluation(s)</small>
+                </div>
+            </div>
+
+            <!-- Informations détaillées -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p><strong>Catégorie:</strong> {{ book.category.name }}</p>
+                    <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+                    <p><strong>Description:</strong></p>
+                    <p class="text-justify">{{ book.description }}</p>
+                </div>
+            </div>
+
+            <!-- Bouton d'emprunt -->
+            {% if user.is_authenticated %}
+                {% if book.available_copies > 0 and not user_has_borrowed %}
+                    <form method="post" action="{% url 'borrow_book' book.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Emprunter ce livre</button>
+                    </form>
+                {% elif user_has_borrowed %}
+                    <div class="alert alert-info">
+                        Vous avez déjà emprunté ce livre.
+                    </div>
+                {% else %}
+                    {% if user_has_reservation %}
+                        <div class="alert alert-info">
+                            Vous avez déjà réservé ce livre. Vous serez notifié quand il sera disponible.
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'reserve_book' book.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Réserver ce livre</button>
+                        </form>
+                        {% if reservation_count > 0 %}
+                            <div class="mt-2 text-muted">
+                                <small>Il y a actuellement {{ reservation_count }} personne(s) en attente.</small>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <a href="{% url 'login' %}?next={{ request.path }}">Connectez-vous</a> pour emprunter ou réserver ce livre.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

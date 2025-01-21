@@ -1,0 +1,119 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Tableau de Bord Bibliothécaire{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Tableau de Bord Bibliothécaire</h1>
+
+    <!-- Résumé des statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total des livres</h5>
+                    <h2>{{ total_books }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Livres empruntés</h5>
+                    <h2>{{ books_out }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <h2>{{ total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total emprunts</h5>
+                    <h2>{{ total_borrowings }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emprunts en retard -->
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Emprunts en retard</h5>
+        </div>
+        <div class="card-body">
+            {% if overdue_borrowings %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Livre</th>
+                                <th>Date d'emprunt</th>
+                                <th>Date de retour prévue</th>
+                                <th>Jours de retard</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borrowing in overdue_borrowings %}
+                                <tr>
+                                    <td>{{ borrowing.user.username }}</td>
+                                    <td>{{ borrowing.book.title }}</td>
+                                    <td>{{ borrowing.borrowed_date|date:"d/m/Y" }}</td>
+                                    <td>{{ borrowing.return_date|date:"d/m/Y" }}</td>
+                                    <td class="text-danger">
+                                        {{ borrowing.return_date|timesince }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="mb-0">Aucun emprunt en retard.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Réservations en attente -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Réservations en attente</h5>
+        </div>
+        <div class="card-body">
+            {% if active_reservations %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Livre</th>
+                                <th>Date de réservation</th>
+                                <th>Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in active_reservations %}
+                                <tr>
+                                    <td>{{ reservation.user.username }}</td>
+                                    <td>{{ reservation.book.title }}</td>
+                                    <td>{{ reservation.reservation_date|date:"d/m/Y" }}</td>
+                                    <td>{{ reservation.get_position }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="mb-0">Aucune réservation en attente.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

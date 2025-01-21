@@ -1,0 +1,26 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">Bienvenur sur BiblioTech</h1>
+        <p class="lead">Découvrez notre collection de livres et gérez vos emprunts en ligne.</p>
+        <hr class="my-4">
+        <p>Consultez nos dernières acquisitions :</p>
+    </div>
+
+    <div class="row">
+        {% for book in recent_books %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text">{{ book.author }}</p>
+                        <a href="{% url 'book_detail' book.pk %}" class="btn btn-primary">Voir détails</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
