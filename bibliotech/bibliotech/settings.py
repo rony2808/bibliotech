@@ -76,17 +76,34 @@ WSGI_APPLICATION = 'bibliotech.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bibliotech',
-        'USER':'postgres',
-        'PASSWORD': 'Boss2808',
-        'HOST': 'localhost',
-        'PORT': '5432',
 
+
+import os
+
+# Vérifie si on est sur PythonAnywhere
+ON_PYTHONANYWHERE = 'PYTHONANYWHERE' in os.environ
+
+if ON_PYTHONANYWHERE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'votre_username$bibliotech',
+            'USER': 'votre_username',
+            'PASSWORD': 'votre_mot_de_passe_mysql',
+            'HOST': 'votre_username.mysql.pythonanywhere-services.com'
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'bibliotech',
+            'USER': 'postgres',
+            'PASSWORD': 'votre_mot_de_passe_postgres',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 
 # Password validation
