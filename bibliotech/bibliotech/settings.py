@@ -87,10 +87,10 @@ if ON_PYTHONANYWHERE:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'votre_username$bibliotech',
-            'USER': 'votre_username',
-            'PASSWORD': 'votre_mot_de_passe_mysql',
-            'HOST': 'votre_username.mysql.pythonanywhere-services.com'
+            'NAME': 'ronykn$bibliotech',
+            'USER': 'ronykn',
+            'PASSWORD': 'Boss280895!',
+            'HOST': 'ronykn.mysql.pythonanywhere-services.com'
         }
     }
 else:
